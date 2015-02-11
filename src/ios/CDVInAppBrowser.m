@@ -27,6 +27,7 @@
 
 #define    kInAppBrowserToolbarBarPositionBottom @"bottom"
 #define    kInAppBrowserToolbarBarPositionTop @"top"
+#define    kInAppBrowserToolbarColor @"#000000"
 
 #define    TOOLBAR_HEIGHT 44.0
 #define    LOCATIONBAR_HEIGHT 21.0
@@ -469,6 +470,14 @@
     return self;
 }
 
+// Assumes input like "#00FF00" (#RRGGBB).
+- (UIColor *)colorFromHexString:(NSString *)hexString {
+    unsigned rgbValue = 0;
+    NSScanner *scanner = [NSScanner scannerWithString:hexString];
+    [scanner scanHexInt:&rgbValue];
+    return [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:1.0];
+}
+
 - (void)createViews
 {
     // We create the views in code for primarily for ease of upgrades and not requiring an external .xib to be included
@@ -484,7 +493,7 @@
     [self.view sendSubviewToBack:self.webView];
 
     self.webView.delegate = _webViewDelegate;
-    self.webView.backgroundColor = [[UIColor alloc] initWithRed:45.0/255.0 green:189.0/255.0 blue:242.0/255.0 alpha:1.0];
+    self.webView.backgroundColor = [UIColor whiteColor];
 
     self.webView.clearsContextBeforeDrawing = YES;
     self.webView.clipsToBounds = YES;
@@ -526,7 +535,7 @@
     self.toolbar.autoresizesSubviews = YES;
     self.toolbar.autoresizingMask = toolbarIsAtBottom ? (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin) : UIViewAutoresizingFlexibleWidth;
     self.toolbar.barStyle = UIBarStyleBlackOpaque;
-    self.toolbar.barTintColor = [[UIColor alloc] initWithRed:45.0/255.0 green:189.0/255.0 blue:242.0/255.0 alpha:1.0];
+    self.toolbar.barTintColor = [self colorFromHexString: _browserOptions.toolbarcolor];
     self.toolbar.clearsContextBeforeDrawing = NO;
     self.toolbar.clipsToBounds = NO;
     self.toolbar.contentMode = UIViewContentModeScaleToFill;
@@ -566,20 +575,21 @@
     self.addressLabel.textAlignment = NSTextAlignmentLeft;
     self.addressLabel.textColor = [UIColor colorWithWhite:1.000 alpha:1.000];
     self.addressLabel.userInteractionEnabled = NO;
+    
+    CGFloat halfStatusBarOffset = [self getStatusBarOffset] / 2;
+    UIEdgeInsets buttonInsets = UIEdgeInsetsMake(halfStatusBarOffset, 0, -halfStatusBarOffset, 0);
 
-   // NSString* frontArrowString = NSLocalizedString(@"►", nil); // create arrow from Unicode char
-   // self.forwardButton = [[UIBarButtonItem alloc] initWithTitle:frontArrowString style:UIBarButtonItemStylePlain target:self action:@selector(goForward:)];
-    self.forwardButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"rightchevron"] style:UIBarButtonItemStylePlain target:self action:@selector(goForward:)];
+    UIImage *imageRightChevron = [UIImage imageNamed:@"rightchevron"];
+    self.forwardButton = [[UIBarButtonItem alloc] initWithImage:imageRightChevron style:UIBarButtonItemStylePlain target:self action:@selector(goForward:)];
     self.forwardButton.tintColor = [UIColor whiteColor];
     self.forwardButton.enabled = YES;
-    self.forwardButton.imageInsets = UIEdgeInsetsZero;
+    self.forwardButton.imageInsets = buttonInsets;
 
-    //NSString* backArrowString = NSLocalizedString(@"◄", nil); // create arrow from Unicode char
-    //self.backButton = [[UIBarButtonItem alloc] initWithTitle:backArrowString style:UIBarButtonItemStylePlain target:self action:@selector(goBack:)];
-    self.backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"leftchevron"] style:UIBarButtonItemStylePlain target:self action:@selector(goBack:)];
+    UIImage *imageLeftChevron = [UIImage imageNamed:@"leftchevron"];
+    self.backButton = [[UIBarButtonItem alloc] initWithImage:imageLeftChevron style:UIBarButtonItemStylePlain target:self action:@selector(goBack:)];
     self.backButton.tintColor = [UIColor whiteColor];
     self.backButton.enabled = YES;
-    self.backButton.imageInsets = UIEdgeInsetsZero;
+    self.backButton.imageInsets = buttonInsets;
 
     [self.toolbar setItems:@[self.closeButton, flexibleSpaceButton, self.backButton, fixedSpaceButton, self.forwardButton]];
 
@@ -732,11 +742,6 @@
     [super viewDidUnload];
 }
 
-- (UIStatusBarStyle)preferredStatusBarStyle
-{
-    return UIStatusBarStyleDefault;
-}
-
 - (void)close
 {
     [CDVUserAgentUtil releaseLock:&_userAgentLockToken];
@@ -783,11 +788,7 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    if (IsAtLeastiOSVersion(@"7.0")) {
-        [[UIApplication sharedApplication] setStatusBarStyle:[self preferredStatusBarStyle]];
-    }
     [self rePositionViews];
-
     [super viewWillAppear:animated];
 }
 
@@ -805,7 +806,7 @@
 - (void) rePositionViews {
     if ([_browserOptions.toolbarposition isEqualToString:kInAppBrowserToolbarBarPositionTop]) {
         [self.webView setFrame:CGRectMake(self.webView.frame.origin.x, TOOLBAR_HEIGHT, self.webView.frame.size.width, self.webView.frame.size.height)];
-        [self.toolbar setFrame:CGRectMake(self.toolbar.frame.origin.x, [self getStatusBarOffset], self.toolbar.frame.size.width, self.toolbar.frame.size.height)];
+        [self.toolbar setFrame:CGRectMake(self.toolbar.frame.origin.x, 0, self.toolbar.frame.size.width, self.toolbar.frame.size.height + [self getStatusBarOffset])];
     }
 }
 
@@ -917,6 +918,7 @@
         self.toolbar = YES;
         self.closebuttoncaption = nil;
         self.toolbarposition = kInAppBrowserToolbarBarPositionBottom;
+        self.toolbarcolor = kInAppBrowserToolbarColor;
         self.clearcache = NO;
         self.clearsessioncache = NO;
 
