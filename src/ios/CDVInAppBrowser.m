@@ -789,7 +789,7 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [self rePositionViews];
-    [super viewWillAppear:animated];
+    [super viewWillAppear:YES];
 }
 
 //
