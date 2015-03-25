@@ -83,6 +83,7 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String LOAD_ERROR_EVENT = "loaderror";
     private static final String CLEAR_ALL_CACHE = "clearcache";
     private static final String CLEAR_SESSION_CACHE = "clearsessioncache";
+    private static final String CLOSE_BUTTON_CAPTION = "closebuttoncaption";
 
     private InAppBrowserDialog dialog;
     private WebView inAppWebView;
@@ -92,7 +93,8 @@ public class InAppBrowser extends CordovaPlugin {
     private boolean openWindowHidden = false;
     private boolean clearAllCache= false;
     private boolean clearSessionCache=false;
-    private static int toolbarColor = android.graphics.Color.LTGRAY;
+    private int toolbarColor = android.graphics.Color.LTGRAY;
+    private String closeButtonCaption = "Back";
 
     /**
      * Executes the request and returns PluginResult.
@@ -471,11 +473,13 @@ public class InAppBrowser extends CordovaPlugin {
      * @param url           The url to load.
      * @param jsonObject
      */
-    public String showWebPage(final String url, HashMap<String, Boolean> features, HashMap<String, String> values) {
+    public String showWebPage(final String url, HashMap<String, Boolean> features, final HashMap<String, String> values) {
         // Determine if we should hide the location bar.
         showLocationBar = true;
         openWindowHidden = false;
+
         if (features != null) {
+
             Boolean show = features.get(LOCATION);
             if (show != null) {
                 showLocationBar = show.booleanValue();
@@ -495,16 +499,21 @@ public class InAppBrowser extends CordovaPlugin {
             }
         }
 
-        if (values != null) {
-            Boolean hasToolbarColor = features.get(TOOLBAR_COLOR);
-            if (hasToolbarColor) {
-                String toolbarColorValue = values.get(TOOLBAR_COLOR);
-                Log.d(LOG_TAG, "The toolbar color is: " + toolbarColorValue);
-                try {
-                    toolbarColor = Color.parseColor("#" + toolbarColorValue);
+            if (values != null) {
+                Boolean hasToolbarColor = features.get(TOOLBAR_COLOR);
+                if (hasToolbarColor) {
+                    String toolbarColorValue = values.get(TOOLBAR_COLOR);
+                    Log.d(LOG_TAG, "The toolbar color is: " + toolbarColorValue);
+                    try {
+                        toolbarColor = Color.parseColor("#" + toolbarColorValue);
+                    }
+                    catch (java.lang.IllegalArgumentException e) {
+                        Log.d(LOG_TAG, "Invalid color value: " + e);
+                    }
                 }
-                catch (java.lang.IllegalArgumentException e) {
-                    Log.d(LOG_TAG, "Invalid color value: " + e);
+                Boolean hasCloseButtonCaption = features.get(CLOSE_BUTTON_CAPTION);
+                if (hasCloseButtonCaption ) {
+                    closeButtonCaption = values.get(CLOSE_BUTTON_CAPTION);
                 }
             }
         }
@@ -606,7 +615,7 @@ public class InAppBrowser extends CordovaPlugin {
 
                 //Text
                 TextView returnText = new TextView(cordova.getActivity());
-                returnText.setText("Return To PumpUp");
+                returnText.setText(closeButtonCaption);
                 returnText.setTextColor(Color.parseColor("#ffffff"));
                 RelativeLayout.LayoutParams textParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
                 textParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
