@@ -497,7 +497,6 @@ public class InAppBrowser extends CordovaPlugin {
                     clearSessionCache = cache.booleanValue();
                 }
             }
-        }
 
             if (values != null) {
                 Boolean hasToolbarColor = features.get(TOOLBAR_COLOR);
