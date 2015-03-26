@@ -553,7 +553,7 @@ public class InAppBrowser extends CordovaPlugin {
                 //Please, no more black!
                 toolbar.setBackgroundColor(toolbarColor);
                 toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, this.dpToPixels(44)));
-                toolbar.setPadding(this.dpToPixels(2), this.dpToPixels(2), this.dpToPixels(2), this.dpToPixels(2));
+                toolbar.setPadding(this.dpToPixels(10), this.dpToPixels(2), this.dpToPixels(10), this.dpToPixels(2));
                 toolbar.setHorizontalGravity(Gravity.RIGHT);
                 toolbar.setVerticalGravity(Gravity.CENTER_VERTICAL);
 
@@ -568,8 +568,10 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // Forward button
                 Button forward = new Button(cordova.getActivity());
-                RelativeLayout.LayoutParams forwardLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                RelativeLayout.LayoutParams forwardLayoutParams = new RelativeLayout.LayoutParams(this.dpToPixels(30), this.dpToPixels(30));
                 forwardLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                forwardLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
+
                 forward.setLayoutParams(forwardLayoutParams);
                 forward.setContentDescription("Forward Button");
                 forward.setId(3);
@@ -591,9 +593,12 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // Back button
                 Button back = new Button(cordova.getActivity());
-                RelativeLayout.LayoutParams backLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
+                RelativeLayout.LayoutParams backLayoutParams = new RelativeLayout.LayoutParams(this.dpToPixels(30), this.dpToPixels(30));
                 backLayoutParams.addRule(RelativeLayout.LEFT_OF,3);
+                backLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
+                backLayoutParams.setMargins(0,0,this.dpToPixels(20),0);
                 back.setLayoutParams(backLayoutParams);
+
                 back.setContentDescription("Back Button");
                 back.setId(2);
                 int backResId = activityRes.getIdentifier("ic_action_previous_item", "drawable", cordova.getActivity().getPackageName());
